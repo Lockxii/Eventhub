@@ -24,14 +24,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[Column(type: 'string', length: 100, nullable: false)]
     #[Assert\NotBlank, Assert\Type('string')]
-    private string $username;
+    private string $username = '';
 
     #[Column(type: 'string', length: 180, unique: true)]
     #[Assert\Email]
-    private string $email;
+    private string $email = '';
 
     #[Column(type: 'string', nullable: false)]
-    #[Assert\NotBlank, Assert\PasswordStrength]
     private string $password;
 
     #[Column(type: 'json')]
