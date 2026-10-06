@@ -11,11 +11,11 @@ use Twig\Environment;
 #[Route(path: '/', name: 'home', methods:['GET'])]
 class HomeController
 {
- public function __invoke(Environment $twig) : Response {
+    public function __invoke(Environment $twig) : Response {
 
-     return new Response($twig->render('home.html.twig',[
+        return new Response($twig->render('home.html.twig',[
 
 
-     ]), Response::HTTP_OK);
- }
+        ]), Response::HTTP_OK);
+    }
 }
