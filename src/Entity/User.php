@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\Table;
+use Doctrine\ORM\Mapping\OneToMany;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -40,9 +43,68 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Column(type: 'datetime_immutable', nullable: false)]
     private \DateTimeImmutable $createdAt;
 
+    /**
+     * @var Collection<int, Event>
+     */
+    #[OneToMany(targetEntity: Event::class, mappedBy: 'organizer')]
+    private Collection $organizedEvents;
+
+    /**
+     * @var Collection<int, Registration>
+     */
+    #[OneToMany(targetEntity: Registration::class, mappedBy: 'user')]
+    private Collection $registrations;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
+        $this->organizedEvents = new ArrayCollection();
+        $this->registrations = new ArrayCollection();
+    }
+
+    /**
+     * @return Collection<int, Event>
+     */
+    public function getOrganizedEvents(): Collection
+    {
+        return $this->organizedEvents;
+    }
+
+    public function addOrganizedEvent(Event $event): self
+    {
+        if (!$this->organizedEvents->contains($event)) {
+            $this->organizedEvents->add($event);
+            $event->setOrganizer($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOrganizedEvent(Event $event): self
+    {
+        if ($this->organizedEvents->removeElement($event) && $event->getOrganizer() === $this) {
+            $event->setOrganizer(null);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Registration>
+     */
+    public function getRegistrations(): Collection
+    {
+        return $this->registrations;
+    }
+
+    public function addRegistration(Registration $registration): self
+    {
+        if (!$this->registrations->contains($registration)) {
+            $this->registrations->add($registration);
+            $registration->setUser($this);
+        }
+
+        return $this;
     }
 
     /**
