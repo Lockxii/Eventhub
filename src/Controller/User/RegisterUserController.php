@@ -1,14 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Controller\User;
 
 use App\Entity\User;
 use App\Form\User\UserType;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Repository\UserRepository;
+use Symfony\Component\Form\Exception\LogicException;
 use Symfony\Component\Form\FormFactoryInterface;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
@@ -17,32 +15,27 @@ use Symfony\Component\Routing\Attribute\Route;
 use Twig\Environment;
 
 #[AsController]
-#[Route(path: '/inscription', name: 'inscription_user', methods: ['GET', 'POST'])]
+#[Route('/register', name: 'app_register', methods: ['GET', 'POST'])]
 class RegisterUserController
 {
-    public function __invoke(
-        Environment $twig,
-        Request $request,
-        EntityManagerInterface $entityManager,
-        UserPasswordHasherInterface $passwordHasher,
-        FormFactoryInterface $formFactory,
-    ): Response {
+    public function __invoke(Environment $twig, Request $request, UserRepository $userRepository, UserPasswordHasherInterface $userPasswordHasher, FormFactoryInterface $formFactory): Response
+    {
         $user = new User();
         $form = $formFactory->create(UserType::class, $user);
         $form->handleRequest($request);
+        try {
+            if($form->isSubmitted() && $form->isValid()){
+                $hashedPassword = $userPasswordHasher->hashPassword($user, $form->get('password')->getData());
+                $user->setPassword($hashedPassword);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $plainPassword = $form->get('password')->getData();
-            $user->setPassword($passwordHasher->hashPassword($user, $plainPassword));
+                $user = $form->getData();
+                $userRepository->persistAndSave($user);
+            }
+        } catch (LogicException $exception){
 
-            $entityManager->persist($user);
-            $entityManager->flush();
-
-            return new RedirectResponse('/');
         }
-
         return new Response($twig->render('user/register.html.twig', [
             'form' => $form->createView(),
-        ]));
+        ]), Response::HTTP_OK);
     }
 }

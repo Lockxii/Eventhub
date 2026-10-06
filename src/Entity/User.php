@@ -37,7 +37,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Assert\NotBlank]
     private array $roles = ['ROLE_USER'];
 
-    #[Column(type: 'datetime', nullable: false)]
+    #[Column(type: 'datetime_immutable', nullable: false)]
     private \DateTimeImmutable $createdAt;
 
     public function __construct()

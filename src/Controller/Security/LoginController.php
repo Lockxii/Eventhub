@@ -15,7 +15,7 @@ class LoginController
     public function __invoke(AuthenticationUtils $authenticationUtils,
                              Environment $twig): Response
     {
-        return new Response($twig->render('security/login.html.twig', [
+        return new Response($twig->render('login.html.twig', [
             'last_username' => $authenticationUtils->getLastUsername(),
             'error' => $authenticationUtils->getLastAuthenticationError()
         ]), Response::HTTP_OK);
